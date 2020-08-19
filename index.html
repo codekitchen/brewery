@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+    <title>codekitchen brewery</title>
+    <link rel="stylesheet" href="https://get.mavo.io/mavo.css" />
+    <script src="https://get.mavo.io/mavo.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+        crossorigin="anonymous"></script>
+    <style>
+        .nav { margin-bottom: 1rem; }
+        td[mv-mode="edit"] input { width: 100% !important; }
+        .brew:not(.mv-target-within) table, .brew:not(.mv-target-within) .row { display: none; }
+        body.mv-target-within .brew:not(.mv-target-within) { display: none; }
+        body:not(.mv-target-within) .show-all { display: none; }
+        /* td { padding: 0 0.45em; } */
+        /* main:not(:target) { display: none; } */
+    </style>
+</head>
+<body mv-app="brews" mv-plugins="gist" mv-storage="https://gist.github.com/codekitchen/2ae0f1bc8508ed0a1f792cd229e42deb" mv-autosave="5" mv-bar="with import export">
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#brews">Brews</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#grains">Grains</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#hops">Hops</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#yeasts">Yeasts</a>
+        </li>
+    </ul>
+
+    <div class="col-12 tab-content">
+        <main role="tabpanel" class="tab-pane active container" id="brews">
+            <a href="#" class="show-all">↩ Show all brews</a>
+
+            <div property="brews" class="brew" mv-multiple mv-initial-items="0" id="[idify(name)]">
+                <h2><a href="#[idify(name)]"><span property="name"></span></a></h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Grain</th>
+                            <th>Pounds</th>
+                            <th>Yield</th>
+                            <th>Color</th>
+                            <th>% Bill</th>
+                        </tr>
+                    </thead>
+                    <tr property="recipe_grains" mv-multiple mv-initial-items="0">
+                        <td property=name></td>
+                        <td property="weight" mv-default="1.0"></td>
+                        <td property="yield" mv-default="[first(condense(filter(grains, grains.name = recipe_grains.name))).yield]"></td>
+                        <td property="color" mv-default="[first(condense(filter(grains, grains.name = recipe_grains.name))).color]"></td>
+                        <td>
+                            [(weight / sum($all.weight)) * 100]%
+                            <meta property="PPG" content="[(yield - 1) * 1000 * weight]" />
+                        </td>
+                    </tr>
+                </table>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Hop</th>
+                            <th>Ounces</th>
+                            <th>Use</th>
+                            <th>Minutes</th>
+                            <th>Alpha</th>
+                            <th>IBUs</th>
+                        </tr>
+                    </thead>
+                    <tr property="recipe_hops" mv-multiple mv-initial-items="0">
+                        <td property=name></td>
+                        <td property="weight" mv-default="1.0"></td>
+                        <td property="use" mv-default="Boil"></td>
+                        <td property="minutes" mv-default="60"></td>
+                        <td property="alpha" mv-default="[first(condense(filter(hops, hops.name = recipe_hops.name))).alpha]"></td>
+                        <td hidden>
+                            <meta property="boil_factor" content="[(1-Math.pow(2.72, -0.04 * minutes)) / 4.15]" />
+                            <meta property="ibu_calc" content="[(ibu_bigness * boil_factor) * (weight * alpha * 0.01 * 7490) / batch_size]" />
+                        </td>
+                        <td property="ibu" mv-value="if(use = 'Boil', ibu_calc, 0.0)"></td>
+                    </tr>
+                </table>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Yeast</th>
+                            <th>Attenuation</th>
+                            <th>Flocculation</th>
+                        </tr>
+                    </thead>
+                    <tr property="recipe_yeasts" mv-multiple mv-initial-items="0">
+                        <td property=id></td>
+                        <td property="attenuation" mv-default="[first(condense(filter(yeasts, yeasts.id = recipe_yeasts.id))).attenuation]"></td>
+                        <td property="flocculation" mv-default="[first(condense(filter(yeasts, yeasts.id = recipe_yeasts.id))).flocculation]"></td>
+                    </tr>
+                </table>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Target Temp</th>
+                            <th>Minutes</th>
+                            <th>Addition</th>
+                        </tr>
+                    </thead>
+                    <tr property="recipe_steps" mv-multiple mv-initial-items="0">
+                        <td property="name"></td>
+                        <td property="target_temp"></td>
+                        <td property="minutes"></td>
+                        <td property="addition"></td>
+                    </tr>
+                </table>
+                <div class="row">
+                    <div class="col-3">
+                        <h5>Calculated</h5>
+                        <meta property="ibu_bigness" content="[1.65 * Math.pow(0.000125, og - 1)]" />
+                        <meta property="sum_ppg" content="[sum(PPG)]" />
+                        <table class="table">
+                            <tr> <td>OG</td> <td property="og" mv-value="digits(1, 3, 1+(sum(PPG)*(efficiency/100)/batch_size)*0.001)"></td> </tr>
+                            <tr> <td>FG</td> <td property="fg" mv-value="digits(1, 3, og - ((og - 1) * replace(attenuation, '%', '') * 0.01))"></td> </tr>
+                            <tr> <td>ABV</td> <td><span property="abv" mv-value="digits(1, 1, (og-fg) * 1.31 * 100)"></span>%</td> </tr>
+                            <tr> <td>IBUs</td> <td property="ibus" mv-value="sum(recipe_hops.ibu)"></td> </tr>
+                            <tr> <td>Color</td> <td property="batch_color" mv-value="round(1.4922 * (Math.pow(sum(color * weight) / batch_size, 0.6859)))"></td> </tr>
+                            <tr> <td>Bitterness</td> <td property="bitterness" mv-value="ibus / (1000*(og-1))"></td> </tr>
+                        </table>
+                    </div>
+                    <div class="col-3">
+                        <h5>Profile</h5>
+                        <table class="table">
+                            <tr><td>Batch Size</td> <td><span property="batch_size" mv-default="5.0"></span> Gallons</td></tr>
+                            <tr><td>Efficiency</td> <td><span property="efficiency" mv-default="100"></span>%</td></tr>
+                            <tr><td>Boil Hours</td> <td><span property="boil_hours" mv-default="1.0"></span></td></tr>
+                            <tr><td>Gal/Lb Loss</td> <td><span property="gal_lb_loss" mv-default="0.12"></span></td></tr>
+                            <tr><td>Kettle Loss</td> <td><span property="kettle_loss" mv-default="0.4"></span></td></tr>
+                            <tr><td>Boiloff per Hour</td> <td><span property="boiloff_per_hour" mv-default="1.4"></span></td></tr>
+                            <tr><td>Water Volume</td> <td><span property="water_volume" mv-value="batch_size + kettle_loss + (gal_lb_loss * sum(recipe_grains.weight)) + (boiloff_per_hour * boil_hours)"></span></td></tr>
+                        </table>
+                    </div>
+                    <div class="col-3">
+                        <h5>Measured</h5>
+                        <table class="table">
+                            <tr><td>Final OG</td> <td property="measured_og"></td></tr>
+                            <tr><td>Final FG</td> <td property="measured_fg"></td></tr>
+                            <tr><td>ABV</td> <td><span property="measured_abv" mv-value="digits(1, 1, (measured_og-measured_fg) * 1.31 * 100)"></span>%</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-3">
+                        <h5>Notes</h5>
+                        <table class="table">
+                            <tr property="notes" mv-multiple mv-initial-items="0">
+                                <td property="name"></td>
+                                <td property="text"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <main role="main" class="tab-pane container" id="hops">
+            <table class="table table-striped" mv-mode="edit">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Alpha</th>
+                        <th>Beta</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tr property="hops" mv-multiple>
+                    <td property="name"></td>
+                    <td property="alpha"></td>
+                    <td property="beta"></td>
+                    <td property="notes"></td>
+                </tr>
+            </table>
+        </main>
+
+        <main role="main" class="tab-pane container" id="grains">
+            <table class="table table-striped" mv-mode="edit">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Yield</th>
+                        <th>Color</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tr property="grains" mv-multiple>
+                    <td property="name"></td>
+                    <td property="yield"></td>
+                    <td property="color"></td>
+                    <td property="type"></td>
+                </tr>
+            </table>
+        </main>
+
+        <main role="main" class="tab-pane container" id="yeasts">
+            <table class="table table-striped" mv-mode="edit">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Attenuation</th>
+                        <th>Flocculation</th>
+                        <th>Tolerance</th>
+                        <th>Low Temp</th>
+                        <th>High Temp</th>
+                    </tr>
+                </thead>
+                <tr property="yeasts" mv-multiple>
+                    <td property="id"></td>
+                    <td property="name"></td>
+                    <td property="attenuation"></td>
+                    <td property="flocculation"></td>
+                    <td property="tolerance"></td>
+                    <td property="temp_low"></td>
+                    <td property="temp_high"></td>
+                </tr>
+            </table>
+        </main>
+    </div>
+</body>
+</html>
