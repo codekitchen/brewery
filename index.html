@@ -236,5 +236,15 @@
             </table>
         </main>
     </div>
+    <script>
+        function getCurrentBrew() {
+            let brewName = document.querySelector("div.brew.mv-target-within h2").innerText;
+            if (!brewName) {
+                return {};
+            }
+            let brew = Mavo.all[0].getData().brews.find((b) => b.name == brewName);
+            return brew || {};
+        }
+    </script>
 </body>
 </html>
