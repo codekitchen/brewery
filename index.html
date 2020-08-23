@@ -236,6 +236,8 @@
             </table>
         </main>
     </div>
+    <script type='text/json' id='current-brew'>
+    </script>
     <script>
         function getCurrentBrew() {
             let brewName = document.querySelector("div.brew.mv-target-within h2").innerText;
@@ -245,6 +247,12 @@
             let brew = Mavo.all[0].getData().brews.find((b) => b.name == brewName);
             return brew || {};
         }
+        function updateCurrentBrew() {
+            let brew = getCurrentBrew();
+            document.getElementById('current-brew').innerText = JSON.stringify(brew);
+        }
+        window.addEventListener('hashchange', updateCurrentBrew);
+        document.body.addEventListener('mv-load', updateCurrentBrew);
     </script>
 </body>
 </html>
